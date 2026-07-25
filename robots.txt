@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://eden-studentservice.com/sitemap.xml
