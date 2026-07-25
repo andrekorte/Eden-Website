@@ -21,7 +21,8 @@ no build step, no dependencies. Just HTML, CSS, and a few lines of JS.
 2. Under **Source**, choose **Deploy from a branch**, then pick
    **`main`** and **`/ (root)`**, and click **Save**.
 3. After a minute or two the site is live at
-   `https://andrekorte.github.io/eden-website/`.
+   `https://andrekorte.github.io/Eden-Website/` (the address is
+   case-sensitive — capital E and W, matching the repository name).
 
 ## Using the real domain (eden-studentservice.com)
 
