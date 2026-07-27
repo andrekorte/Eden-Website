@@ -53,4 +53,5 @@ once you're happy with the new site.
 - **Sydney office address**: sources differ between Shop T02 and T03 at
   Capital Square — currently set to T02, please confirm.
 - **Phone numbers / opening hours** on `contact.html`.
-- **Service pricing** (currently 12,990 THB for the student visa service).
+- Service pricing is intentionally not shown on the site — enquiries go
+  through LINE.
