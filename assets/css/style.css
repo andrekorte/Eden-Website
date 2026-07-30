@@ -956,3 +956,23 @@ a:hover {
   margin: 0;
   color: var(--c-muted);
 }
+
+/* --- Facebook embed --------------------------------------------------------- */
+
+.fb-embed {
+  min-height: 200px;
+  display: flex;
+  justify-content: center;
+}
+
+.fb-embed .fb-page {
+  max-width: 100%;
+}
+
+.fb-embed blockquote {
+  margin: 0;
+  padding: 1rem;
+  border: 1px dashed var(--c-line);
+  border-radius: var(--radius);
+  color: var(--c-muted);
+}
