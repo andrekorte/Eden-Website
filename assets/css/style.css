@@ -987,3 +987,37 @@ a:hover {
 .split--fb .fb-embed {
   width: 100%;
 }
+
+.fb-fallback {
+  width: 100%;
+  max-width: 500px;
+  background: linear-gradient(150deg, var(--c-primary-dark), var(--c-primary));
+  color: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.fb-fallback svg {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  color: #fff;
+  opacity: 0.9;
+}
+
+.fb-fallback h3 {
+  color: #fff;
+  font-size: 1.15rem;
+}
+
+.fb-fallback p {
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 1.5rem;
+}
+
+.fb-fallback .btn {
+  background: #fff;
+  color: var(--c-primary-dark);
+}

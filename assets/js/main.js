@@ -23,34 +23,43 @@
   }
 })();
 
-// Facebook page embed — built as a plain iframe sized to the real container
-// width (Facebook's SDK measures too early on mobile and can render nothing).
+// Facebook feed with a guaranteed fallback.
+// Phones always get the native follow-card (the widget is unreliable on
+// mobile); desktop tries the official widget and swaps to the card if
+// Facebook has not rendered anything within a few seconds.
 (function () {
   var box = document.getElementById('fb-embed');
   if (!box) return;
 
-  var current = 0;
-
-  function render() {
-    var w = Math.min(500, Math.max(220, Math.floor(box.clientWidth)));
-    if (w === current) return;
-    current = w;
-    var h = 720;
-    var src = 'https://www.facebook.com/plugins/page.php' +
-      '?href=' + encodeURIComponent('https://www.facebook.com/EDENStudentService') +
-      '&tabs=timeline&width=' + w + '&height=' + h +
-      '&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false&locale=th_TH';
-    box.innerHTML = '<iframe title="โพสต์ล่าสุดจากเพจ Facebook ของ Eden Student Service" src="' + src +
-      '" width="' + w + '" height="' + h + '" style="border:none;overflow:hidden;max-width:100%"' +
-      ' scrolling="no" frameborder="0" allowfullscreen="true"' +
-      ' allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" loading="lazy"></iframe>';
+  function showCard() {
+    if (box.dataset.fallback) return;
+    box.dataset.fallback = '1';
+    box.innerHTML =
+      '<div class="fb-fallback">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg>' +
+      '<h3>เรียนต่อออสเตรเลีย by Eden Student Service</h3>' +
+      '<p>ผู้ติดตามกว่า 86,000 คน — ข่าววีซ่า โปรโมชัน และเรื่องราวนักเรียน อัปเดตทุกสัปดาห์</p>' +
+      '<a class="btn btn--primary" href="https://www.facebook.com/EDENStudentService" rel="noopener" target="_blank">ดูโพสต์ล่าสุดบน Facebook</a>' +
+      '</div>';
   }
 
-  render();
+  if (window.matchMedia('(max-width: 799px)').matches) {
+    showCard();
+    return;
+  }
 
-  var timer;
-  window.addEventListener('resize', function () {
-    clearTimeout(timer);
-    timer = setTimeout(render, 300);
-  });
+  var tries = 0;
+  var timer = setInterval(function () {
+    tries += 1;
+    var frame = box.querySelector('iframe');
+    var rect = frame && frame.getBoundingClientRect();
+    if (rect && rect.width > 150 && rect.height > 150) {
+      clearInterval(timer);
+      return;
+    }
+    if (tries >= 8) {
+      clearInterval(timer);
+      showCard();
+    }
+  }, 1000);
 })();
