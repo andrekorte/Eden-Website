@@ -976,3 +976,14 @@ a:hover {
   border-radius: var(--radius);
   color: var(--c-muted);
 }
+
+@media (min-width: 900px) {
+  .split--fb {
+    grid-template-columns: 1fr minmax(0, 500px);
+    gap: 3rem;
+  }
+}
+
+.split--fb .fb-embed {
+  width: 100%;
+}
