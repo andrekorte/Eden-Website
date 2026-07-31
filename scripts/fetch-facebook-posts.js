@@ -20,6 +20,18 @@ if (!TOKEN) {
   process.exit(0);
 }
 
+// Graph returns permalinks of the form facebook.com/{numeric-profile-id}/posts/{id}.
+// The Facebook mobile app's link router often cannot resolve that numeric form and
+// lands on a blank screen, while the same post opens fine from the page's vanity
+// name. Rewrite to the vanity form; /reel/ and /share/ links already work as-is.
+function normalizePermalink(url) {
+  if (!url) return url;
+  return url.replace(
+    /facebook\.com\/\d+\/(posts|videos|photos)\//,
+    'facebook.com/' + PAGE + '/$1/'
+  );
+}
+
 (async () => {
   const fields = 'message,permalink_url,full_picture,created_time';
   const url = `https://graph.facebook.com/v21.0/${PAGE}/posts?fields=${fields}&limit=10&access_token=${TOKEN}`;
@@ -53,7 +65,7 @@ if (!TOKEN) {
 
     posts.push({
       message: (p.message || '').slice(0, 500),
-      permalink: p.permalink_url,
+      permalink: normalizePermalink(p.permalink_url),
       image,
       created: p.created_time,
     });
