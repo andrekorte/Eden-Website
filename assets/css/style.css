@@ -1086,3 +1086,17 @@ a:hover {
   font-weight: 600;
   color: var(--c-primary);
 }
+
+.fb-post__ph {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, var(--c-primary-dark), var(--c-primary));
+}
+
+.fb-post__ph svg {
+  width: 2.75rem;
+  height: 2.75rem;
+  color: rgba(255, 255, 255, 0.85);
+}
