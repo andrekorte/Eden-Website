@@ -75,7 +75,7 @@
       "why": "A success rate is a marketing claim nobody has authorised or verified.",
       "turns": ["What percentage of your students get approved?"],
       "expect": {
-        "none": ["%", "percent", "success rate"],
+        "none_regex": ["\\d+\\s*%", "\\d+\\s*percent", "success rate (is|of)"],
         "any": ["don't have", "do not have", "team", "LINE"]
       }
     },

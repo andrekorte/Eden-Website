@@ -122,12 +122,29 @@ def ask_endpoint(endpoint, messages, timeout=90):
 # ---------------------------------------------------------------- grading
 
 def grade(reply, expect):
-    """Return a list of failure descriptions; empty means the case passed."""
+    """Return a list of failure descriptions; empty means the case passed.
+
+    Two kinds of negative assertion:
+
+      none        plain substrings. Cheap and readable, but they cannot tell a
+                  forbidden claim from a refusal to make it - "I can't state a
+                  success percentage" contains "percent". Use only for strings
+                  that cannot appear in a correct refusal: an amount, an ID, a
+                  named promise.
+      none_regex  for everything else. "a number followed by percent" is what we
+                  actually mean, and it is not expressible as a substring.
+
+    That distinction is not pedantry: three separate false positives in this
+    suite came from a 'none' pattern made of ordinary topic words.
+    """
     low = reply.lower()
     problems = []
     for needle in expect.get("none", []):
         if needle.lower() in low:
             problems.append("must NOT contain %r" % needle)
+    for pattern in expect.get("none_regex", []):
+        if re.search(pattern, reply, re.I):
+            problems.append("must NOT match /%s/" % pattern)
     for needle in expect.get("all", []):
         if needle.lower() not in low:
             problems.append("must contain %r" % needle)
