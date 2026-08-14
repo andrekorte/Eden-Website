@@ -411,3 +411,72 @@ Two lessons worth the price:
    system whose real cost bound is the spend cap. Writing down "attempted,
    not verified, compensated, revisit condition named" is a better artefact
    than either pretending it works or sinking the evening into it.
+
+---
+
+## Run 7 — 14 Aug 2026, production findings from the first real user
+
+Thirty minutes after go-live, the business owner's husband opened the site on
+an iPhone and found three defects in one screenshot. The suite was green the
+whole time.
+
+### F4 · The chat panel was open on page load, and the x could not close it
+
+One root cause. The JS correctly starts the panel with `hidden = true`, but
+the stylesheet declares `.eden-chat__panel { display: flex }` — and any author
+`display` overrides the browser's built-in `[hidden] { display: none }`. So
+the attribute the JS was toggling had no effect: panel forced open on load,
+close button a no-op that genuinely fired and genuinely changed nothing.
+
+Why every test missed it: the run-3 browser test **clicked the launcher open**
+and then attacked the rendering. It proved the property it named — injection
+resistance — and never named "starts closed". The default state of a system is
+a property too, and nobody had written it down.
+
+*Fix:* `.eden-chat__panel[hidden] { display: none !important; }`, and the
+behaviour test now asserts closed-on-load, opens-on-click, closes-on-x,
+reopens — before it gets to the attack.
+
+### F5 · The launcher was a text pill, not a chat button
+
+Reported as UX, fixed as UX: round icon button with an inline SVG speech
+bubble, label moved to `aria-label`/`title` so screen readers keep the words.
+
+### F6 · The style rule was being broken in production
+
+The reply in the screenshot contained `**In Australia:**` — literal asterisks,
+because the widget rightly renders text as text. The no-markdown rule was
+tightened in run 4 and its eval case passed; production emitted markdown
+anyway, on a question ("Where are you located?") no case asks.
+
+The response is a change of enforcement layer, not another prompt tweak:
+`stripMarkdown()` in the widget now deletes bold and heading markers and
+normalises `*` bullets to the approved `- ` form, deterministically, on every
+render. The prompt rule stays as the first line of defence; the code is the
+last. **Where a policy can be enforced mechanically, enforce it mechanically —
+a prompt rule is a request, not a guarantee.**
+
+Deliberately NOT done: adding "no markdown on the offices question" as a
+gating eval case. Production has already shown that assertion is flaky at the
+prompt level, and a gate that fails at random on unrelated changes teaches
+people to ignore the gate. A knowingly-unreliable control does not belong in
+CI; it belongs in the display layer, where it is reliable.
+
+### The test-side fixes
+
+- The mock reply now carries forbidden markdown alongside the XSS payload, so
+  the strip is tested with the same positive-evidence discipline as run 3.
+- First run of the new test failed: the stripper only removed `##` at line
+  start and the mock put one mid-line. The stripper was wrong, not the test —
+  fixed to strip heading marks anywhere.
+- 16/16 assertions green in Chromium at iPhone viewport after the fix.
+
+### The wider point
+
+Runs 1–6 tested the rules, the rendering, and the deployed endpoint, and all
+of them were green while the widget shipped with a bug that made it unusable
+on a phone. Everything the tests named was true; the failure was in what
+nobody named. A green suite constrains the system exactly as far as its
+assertions reach, and the first real user found the space beyond them within
+half an hour. That is not an argument against the suite — it is the reason
+the suite grows by one named property per incident.

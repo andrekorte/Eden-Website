@@ -42,7 +42,12 @@ MOCK_REPLY = (
     "<img src=x onerror=alert('xss')> "
     "<script>alert('xss')</script> "
     "[click here](https://evil.example.com) "
-    "https://evil.example.com"
+    "https://evil.example.com\n\n"
+    # Markdown the style rule forbids but production produced anyway
+    # ("**In Australia:**" on a phone, 14 Aug 2026). The widget must strip
+    # these rather than display them.
+    "**Sydney office** and ## a heading\n"
+    "* a star bullet"
 )
 
 

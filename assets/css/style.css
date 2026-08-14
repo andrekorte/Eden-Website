@@ -1111,24 +1111,41 @@ a:hover {
   font-family: var(--font-body);
 }
 
+/* A round chat-bubble button, like every messenger. The label lives in
+   aria-label so screen readers still get words. */
 .eden-chat__launcher {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.8rem 1.4rem;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--c-primary);
   color: #fff;
-  font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 1rem;
   cursor: pointer;
   box-shadow: var(--shadow-lg);
 }
 
+.eden-chat__launcher svg {
+  width: 1.7rem;
+  height: 1.7rem;
+  fill: #fff;
+}
+
 .eden-chat__launcher:hover {
   background: var(--c-primary-dark);
+}
+
+/* The hidden attribute must actually hide. The browser's built-in
+   [hidden] { display: none } is overridden by any author display value, so
+   "display: flex" below silently forced the panel open on page load and made
+   the close button a no-op - the JS was toggling an attribute the CSS had
+   already overruled. Found by a human on a phone, not by a test: the widget
+   test opened the panel by clicking and never asserted it starts closed. */
+.eden-chat__panel[hidden] {
+  display: none !important;
 }
 
 .eden-chat__panel {

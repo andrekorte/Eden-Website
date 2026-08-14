@@ -69,12 +69,32 @@
   }
 
   /**
+   * Strip markdown tokens from model output before display.
+   *
+   * The system rules already forbid markdown, but a rule in a prompt is a
+   * request, not a guarantee - production showed "**In Australia:**" rendered
+   * as literal asterisks on a question no eval case asked. Where a policy can
+   * be enforced mechanically, enforce it mechanically and keep the prompt rule
+   * as the first line rather than the only one. This runs on every re-render
+   * of the accumulating stream, so a "**" split across two chunks still gets
+   * caught once both halves have arrived.
+   */
+  function stripMarkdown(text) {
+    return text
+      .replace(/\*\*/g, "")          // bold markers
+      .replace(/__/g, "")            // the underscore spelling
+      .replace(/^#{1,6}\s+/gm, "")   // heading markers at line start
+      .replace(/#{2,6}\s?/g, "")     // and stray ## anywhere - a model does not always start a line
+      .replace(/^(\s*)\*\s+/gm, "$1- "); // * bullets -> the approved "- " form
+  }
+
+  /**
    * Insert plain text into a node, turning ONLY whitelisted contact details
    * into links. Everything else stays inert text. No innerHTML anywhere.
    */
   function renderText(node, text) {
     node.textContent = "";
-    var remaining = text;
+    var remaining = stripMarkdown(text);
 
     while (remaining.length) {
       // Find the earliest whitelisted match in what is left.
@@ -184,7 +204,20 @@
     el.launcher = make("button", "eden-chat__launcher");
     el.launcher.type = "button";
     el.launcher.setAttribute("aria-expanded", "false");
-    el.launcher.appendChild(make("span", null, TEXT.launcher));
+    el.launcher.setAttribute("aria-label", TEXT.launcher);
+    el.launcher.title = TEXT.launcher;
+    // A speech-bubble icon, built with DOM calls like everything else here.
+    var svgNS = "http://www.w3.org/2000/svg";
+    var icon = document.createElementNS(svgNS, "svg");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    var path = document.createElementNS(svgNS, "path");
+    path.setAttribute(
+      "d",
+      "M12 3C6.5 3 2 6.9 2 11.7c0 2.8 1.6 5.3 4 6.9V22l3.6-2c.8.2 1.6.3 2.4.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3z"
+    );
+    icon.appendChild(path);
+    el.launcher.appendChild(icon);
 
     var panel = make("div", "eden-chat__panel");
     panel.setAttribute("role", "dialog");
