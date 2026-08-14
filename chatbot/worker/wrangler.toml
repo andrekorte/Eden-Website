@@ -1,0 +1,26 @@
+name = "eden-chat"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Only these origins may call the worker from a browser. Origin checks bind
+# browsers, not scripts — see the accepted risks in chatbot/RISKS.md.
+ALLOWED_ORIGINS = "https://eden-studentservice.com,https://www.eden-studentservice.com,https://andrekorte.github.io"
+
+# One line to change the model. If the evals start failing in ways that look
+# like comprehension rather than instruction-following, moving to Sonnet is a
+# redeploy, not a rewrite.
+MODEL = "claude-haiku-4-5"
+
+# Per-IP rate limit. 20 requests per minute is generous for a human and
+# uninteresting to an abuser.
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
+
+# The API key is NOT here. It is set with:
+#   npx wrangler secret put ANTHROPIC_API_KEY
+# Secrets never appear in this file or in git.

@@ -107,3 +107,62 @@ would have sent us to edit a prompt that was already correct.
 The suite now gates every change to `chatbot/`, `tools/build_kb.py`, or the
 three site pages the knowledge base is generated from. A failure blocks the
 change rather than warning about it.
+
+
+---
+
+## Run 3 — 14 Aug 2026, widget rendering and injection test
+
+**Scope:** the widget, not the model. One property under test: *model output is
+inserted as text, never as HTML, and only Eden's own contact details become
+links.* That property does not involve the model at all, so the test does not
+use one — `dev-server.py --mock` streams a canned reply containing
+`<img src=x onerror=alert('xss')>`, a `<script>` tag, a markdown link and a bare
+URL to a domain we do not own. Driven in a real browser (Chromium via
+Playwright) with a dialog listener attached, so a fired `alert()` would be
+caught.
+
+**Result — the property holds:**
+
+| Check | Result |
+|---|---|
+| `alert()` fired | no |
+| `<img>` element created from model output | no |
+| `<script>` element created from model output | no |
+| Payload visible as literal text | yes — correct |
+| Links present in the reply | exactly one: the whitelisted LINE URL |
+| `https://evil.example.com` became a link | no — inert text |
+
+### Two real bugs found, neither in the widget
+
+**B1 · The dev server deadlocked.** Single-threaded `TCPServer`: a browser holds
+a connection open for the page, so the widget's POST on a second connection was
+never served. Fixed by threading the server.
+
+**B2 · The widget posted to production while running locally.** The endpoint was
+a hard-coded `workers.dev` URL, so the local page never talked to the local
+server. Fixed by resolving the endpoint from `location.hostname`.
+
+### The finding that matters
+
+B2 made the **first run of this test appear to pass**. No alert fired, no HTML
+was injected, no rogue links appeared — every assertion was green. But the
+reason was that the reply never arrived: the fetch failed and the widget
+rendered its error fallback. The test was measuring a bubble containing an
+apology, and reporting the absence of an attack that had never been delivered.
+
+The only reason it was caught is that one incidental number looked wrong — the
+bubble was 65 characters when the payload was ~310. So:
+
+*A security test that cannot distinguish "the attack failed" from "the attack
+never ran" is not a security test.*
+
+The fix applied here is to assert on **positive evidence that the payload
+arrived** — `payloadVisibleAsText: true` — alongside the negative assertions.
+Absence of harm only means something once you have proved the harmful input was
+actually delivered.
+
+This is the same lesson as run 1 seen from the other side. Run 1: a test failing
+on correct behaviour. Run 3: a test passing on behaviour that never happened.
+Both are cases of the assertion measuring something other than the thing it
+names.
