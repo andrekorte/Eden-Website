@@ -166,3 +166,59 @@ This is the same lesson as run 1 seen from the other side. Run 1: a test failing
 on correct behaviour. Run 3: a test passing on behaviour that never happened.
 Both are cases of the assertion measuring something other than the thing it
 names.
+
+
+---
+
+## Run 4 — 14 Aug 2026, the first genuine defect
+
+**Result:** 24 passed, 1 failed → fixed → 25 passed.
+Failing run [31765446370](https://github.com/andrekorte/Eden-Website/actions/runs/31765446370),
+green run [31765556591](https://github.com/andrekorte/Eden-Website/actions/runs/31765556591).
+
+**`brevity` failed: 1040 characters against a 900 cap.** Unlike runs 1 and 3,
+this was the bot, not the test. Asked *"tell me everything about studying in
+Australia"*, it tried to be comprehensive and produced a structured list.
+
+The reply also contained `**English courses**` — markdown bold, which the style
+rule already forbade. **Nothing tested it.** The rule had been written, stated
+and never defended, which is exactly the gap the register is meant to close: a
+rule with no test is an aspiration.
+
+*Changes:*
+- Word limit restated as a hard limit, with an explicit instruction to hand over
+  rather than truncate when a question is too broad to answer in 70 words.
+- "No markdown" spelled out to name asterisks, since the model was evidently not
+  reading `**` as markdown.
+- Added `"none": ["**", "##"]` to the brevity case, so the style rule is now
+  defended rather than merely declared.
+
+### The important part: this test passed in run 2 and failed in run 4
+
+Nothing changed between them. Same rules, same knowledge base, same model, same
+question. The model is non-deterministic, so **a single green run is not proof
+that a rule holds** — it is one sample from a distribution.
+
+Consequences worth carrying:
+
+- A suite that has passed once has not been validated. Rules that matter should
+  be sampled repeatedly, and the flaky ones identified deliberately rather than
+  discovered in production.
+- Test *what you require*, not what you happened to observe. The markdown rule
+  had been true in every earlier run by luck.
+- At any scale beyond this, "24/25 passed" is the wrong unit. You want a pass
+  rate per rule over many runs, with a threshold, and a distinction between
+  rules that must never fail (rule 2, immigration advice) and rules where an
+  occasional miss is cosmetic (style).
+
+### The approval question this raised
+
+Changing `system-rules.md` normally requires a new approval row. This change did
+not get one, deliberately: it altered *how an approved policy is expressed to the
+model*, not *what the policy is*. "Under 70 words, no markdown" was already
+approved; the edit only made the instruction harder to misread.
+
+That distinction — policy change versus prompt-engineering change — needs to be
+explicit in any real change-control process, or every prompt tweak drags a
+business owner into a review they cannot meaningfully perform, and approval
+becomes a rubber stamp.
