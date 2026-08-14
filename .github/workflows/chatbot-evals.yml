@@ -1,0 +1,51 @@
+# Guardrail tests for the chat assistant.
+#
+# These run on every change to the rules, the knowledge base or the site content
+# that feeds it. A failure is a blocked change, not a warning: the rules encode
+# business policy that the owner approved, and nothing else notices when an edit
+# quietly weakens one.
+#
+# The suite tests the PROMPT, not a deployment, so it needs no infrastructure -
+# only the ANTHROPIC_API_KEY secret. Cost is a few cents per run.
+
+name: Chatbot guardrail evals
+
+on:
+  push:
+    paths:
+      - "chatbot/**"
+      - "tools/build_kb.py"
+      - "index.html"
+      - "services.html"
+      - "contact.html"
+      - ".github/workflows/chatbot-evals.yml"
+  workflow_dispatch:
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The knowledge base is generated from the site. Rebuilding it here means
+      # a content edit that breaks extraction fails the build instead of
+      # silently shipping a knowledge base with a hole in it.
+      - name: Rebuild knowledge base from the website
+        run: python3 tools/build_kb.py
+
+      - name: Fail if the committed knowledge base is stale
+        run: |
+          if ! git diff --quiet -- chatbot/knowledge-base.md chatbot/worker/src; then
+            echo "::error::Generated files are out of date. Run tools/build_kb.py and commit."
+            git --no-pager diff --stat -- chatbot/knowledge-base.md chatbot/worker/src
+            exit 1
+          fi
+
+      - name: Run guardrail evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 chatbot/evals/run.py
