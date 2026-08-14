@@ -24,7 +24,7 @@
   var LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
   var ENDPOINT =
     window.EDEN_CHAT_ENDPOINT ||
-    (LOCAL ? "/chat" : "https://eden-chat.andrekorte.workers.dev/chat");
+    (LOCAL ? "/chat" : "https://eden-chat.andrekorte1979.workers.dev/chat");
 
   /** All visible strings in one place so they can be reviewed and translated. */
   var TEXT = {
