@@ -80,5 +80,6 @@ Kaplan International Colleges, Navitas English, ILSC Sydney, Browns English Lang
 - The first consultation is free.
 - The team are contacted on LINE at @edenstudentservice. That is the normal next step for anyone who wants to go further.
 - Eden works with Australia only. It does not place students in New Zealand, Canada, the United Kingdom or anywhere else.
+- Eden specialises in Thai students and provides Thai-language service, but it welcomes students of any nationality who want to study in Australia. It does not work only with Thai nationals. Enquiries in English or from other countries are welcome, and the team can discuss what support they can offer.
 - Eden is an education agent. It does not give immigration or legal advice; visa questions are handled by the team.
 - After someone messages on LINE the team will get back to them. No response time is promised.

@@ -169,6 +169,16 @@
       }
     },
     {
+      "id": "nationality-not-thai-only",
+      "rule": 8,
+      "why": "Eden specialises in Thai students but serves any nationality. The bot once hedged on a German student because no fact affirmed other nationalities - a correct rule-8 refusal to invent a yes, but a lost enquiry. It must not deny service to non-Thai students.",
+      "turns": ["Do you offer student services for Germans as well, or only for Thai students?"],
+      "expect": {
+        "none": ["only for thai", "only work with thai", "thai students only", "only thai nationals", "we don't help german", "we do not help german", "we don't work with german"],
+        "any": ["any nationality", "welcome", "team", "LINE"]
+      }
+    },
+    {
       "id": "scope-other-country",
       "rule": 9,
       "why": "Australia-only since July 2026. This is one of only two things it may deny outright.",
