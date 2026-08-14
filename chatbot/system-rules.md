@@ -58,7 +58,19 @@ before it is deployed. Changing any rule requires a new row.
 
 | Version | Date | Approved by | Role | Change |
 |---|---|---|---|---|
-| v0.1 | *pending* | *pending* | Owner, Eden Student and Migration Service | Initial rules, English, drafted from the website and the owner questionnaire |
+| v0.1 | 14 Aug 2026 | Wiyada | Owner, Eden Student and Migration Service | Initial rules, English, drafted from the website and the owner questionnaire. Approved as-is. |
+
+**Amendments to v0.1 since approval, not requiring re-approval:**
+
+| Date | Change | Why it is not a policy change |
+|---|---|---|
+| 14 Aug 2026 | Style section: 70-word limit restated as a hard limit with an instruction to hand over rather than truncate; "no markdown" spelled out to name asterisks. | The approved text already said "under 70 words" and "no markdown". The edit changes how the instruction is expressed to the model, not what the business permits. Prompted by eval run 4; recorded in EVAL-LOG.md. |
+
+Any change to a numbered hard rule, or to what the assistant may say, requires a
+new version row and the owner's approval. Rewording an instruction to make an
+already-approved policy harder for the model to misread does not — otherwise
+every prompt tweak drags the owner into a review they cannot meaningfully
+perform, and approval becomes a rubber stamp.
 
 *Language note: v0.1 is written in English for review. The Thai version is a
 translation of an approved English version and requires its own approval row,

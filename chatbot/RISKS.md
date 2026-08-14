@@ -7,7 +7,7 @@ unmanaged risk; a rule with no test is an aspiration.
 Read this before changing the rules. If you add a rule, add its risk here. If
 you remove a rule, say which risk you are accepting and who accepted it.
 
-**Status:** v0.1 draft, awaiting business owner approval.
+**Status:** v0.1 approved by the business owner (Wiyada) on 14 Aug 2026.
 
 ---
 
