@@ -146,10 +146,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--endpoint", help="test a deployed worker instead of the prompt")
     ap.add_argument("--only", help="substring filter on case id")
+    ap.add_argument("--cases", default="cases.json",
+                    help="case file: cases.json (English) or cases-th.json (Thai)")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
 
-    with open(os.path.join(HERE, "cases.json"), encoding="utf-8") as fh:
+    with open(os.path.join(HERE, args.cases), encoding="utf-8") as fh:
         cases = json.load(fh)["cases"]
     if args.only:
         cases = [c for c in cases if args.only in c["id"]]

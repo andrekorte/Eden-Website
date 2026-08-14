@@ -45,7 +45,14 @@ jobs:
             exit 1
           fi
 
-      - name: Run guardrail evals
+      - name: Run guardrail evals (English)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python3 chatbot/evals/run.py
+
+      # The site is in Thai and so is every real visitor. A guardrail proven
+      # only in English is not proven.
+      - name: Run guardrail evals (Thai)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 chatbot/evals/run.py --cases cases-th.json
