@@ -94,6 +94,16 @@ Behaviour that held first time, without tuning:
 
 ---
 
-## Run 2 — pending
+## Run 2 — 14 Aug 2026, after the assertion fixes
 
-Re-run after the assertion fixes above.
+**Result:** 25 passed, 0 failed. CI run
+[31764664324](https://github.com/andrekorte/Eden-Website/actions/runs/31764664324) — green.
+
+No change was made to the rules or the knowledge base between run 1 and run 2.
+Only the two assertions changed. That is the point worth keeping: the bot's
+behaviour was never the defect, and a suite that had been trusted uncritically
+would have sent us to edit a prompt that was already correct.
+
+The suite now gates every change to `chatbot/`, `tools/build_kb.py`, or the
+three site pages the knowledge base is generated from. A failure blocks the
+change rather than warning about it.
