@@ -28,7 +28,7 @@
 
   /** All visible strings in one place so they can be reviewed and translated. */
   var TEXT = {
-    launcher: "สอบถามข้อมูล",              // "Ask a question"
+    launcher: "แชท",                       // "Chat" - one word, instantly parsed
     title: "ผู้ช่วยตอบคำถาม",               // "Enquiry assistant"
     subtitle: "ตอบอัตโนมัติ · ทีมงานจริงอยู่ที่ LINE",  // "Automated · the real team is on LINE"
     greeting:
@@ -218,6 +218,7 @@
     );
     icon.appendChild(path);
     el.launcher.appendChild(icon);
+    el.launcher.appendChild(make("span", null, TEXT.launcher));
 
     var panel = make("div", "eden-chat__panel");
     panel.setAttribute("role", "dialog");

@@ -1111,27 +1111,32 @@ a:hover {
   font-family: var(--font-body);
 }
 
-/* A round chat-bubble button, like every messenger. The label lives in
-   aria-label so screen readers still get words. */
+/* A pill that reads as "chat" twice over: a speech-bubble icon AND the word.
+   Icon-only was tried first and the owner's feedback was that it disappeared
+   into the page - a launcher nobody notices is a chatbot nobody uses. The
+   white border keeps it visible against the dark hero as well as the light
+   sections it floats over. */
 .eden-chat__launcher {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
+  gap: 0.5rem;
+  padding: 0.75rem 1.3rem;
+  border: 2px solid #fff;
+  border-radius: 999px;
   background: var(--c-primary);
   color: #fff;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 1.05rem;
   cursor: pointer;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
 }
 
 .eden-chat__launcher svg {
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.4rem;
+  height: 1.4rem;
   fill: #fff;
+  flex: none;
 }
 
 .eden-chat__launcher:hover {
