@@ -1111,32 +1111,43 @@ a:hover {
   font-family: var(--font-body);
 }
 
-/* A pill that reads as "chat" twice over: a speech-bubble icon AND the word.
-   Icon-only was tried first and the owner's feedback was that it disappeared
-   into the page - a launcher nobody notices is a chatbot nobody uses. The
-   white border keeps it visible against the dark hero as well as the light
-   sections it floats over. */
+/* The launcher IS a speech bubble: a rounded box with the word inside and a
+   tail drawn by ::after. A launcher nobody notices is a chatbot nobody uses -
+   this is the third size increase on owner feedback, so resist shrinking it
+   for aesthetics. The white border keeps it visible on the dark hero and the
+   light sections alike. */
 .eden-chat__launcher {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.3rem;
+  justify-content: center;
+  padding: 1rem 2rem;
   border: 2px solid #fff;
-  border-radius: 999px;
+  border-radius: 1.25rem;
   background: var(--c-primary);
   color: #fff;
   font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 1.05rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  margin-bottom: 0.7rem; /* room for the tail */
 }
 
-.eden-chat__launcher svg {
-  width: 1.4rem;
-  height: 1.4rem;
-  fill: #fff;
-  flex: none;
+/* The bubble's tail: a rotated square hanging off the bottom-right, showing
+   only its outer corner, with the same white edge as the bubble. */
+.eden-chat__launcher::after {
+  content: "";
+  position: absolute;
+  bottom: -9px;
+  right: 1.4rem;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(45deg);
 }
 
 .eden-chat__launcher:hover {

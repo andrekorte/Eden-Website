@@ -206,18 +206,9 @@
     el.launcher.setAttribute("aria-expanded", "false");
     el.launcher.setAttribute("aria-label", TEXT.launcher);
     el.launcher.title = TEXT.launcher;
-    // A speech-bubble icon, built with DOM calls like everything else here.
-    var svgNS = "http://www.w3.org/2000/svg";
-    var icon = document.createElementNS(svgNS, "svg");
-    icon.setAttribute("viewBox", "0 0 24 24");
-    icon.setAttribute("aria-hidden", "true");
-    var path = document.createElementNS(svgNS, "path");
-    path.setAttribute(
-      "d",
-      "M12 3C6.5 3 2 6.9 2 11.7c0 2.8 1.6 5.3 4 6.9V22l3.6-2c.8.2 1.6.3 2.4.3 5.5 0 10-3.9 10-8.7S17.5 3 12 3z"
-    );
-    icon.appendChild(path);
-    el.launcher.appendChild(icon);
+    // The button IS the speech bubble - the word sits inside the bubble shape,
+    // which is drawn in CSS (rounded box plus a ::after tail). Third iteration
+    // of this launcher: text pill, then icon-only (too subtle), now this.
     el.launcher.appendChild(make("span", null, TEXT.launcher));
 
     var panel = make("div", "eden-chat__panel");
