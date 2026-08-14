@@ -1122,10 +1122,10 @@ a:hover {
   align-items: center;
   justify-content: center;
   padding: 1rem 2rem;
-  border: 2px solid #fff;
+  border: 0;
   border-radius: 1.25rem;
-  background: var(--c-primary);
-  color: #fff;
+  background: var(--c-accent);       /* accent yellow, like the site's CTA buttons */
+  color: #3a2e00;                    /* the same dark-brown text those buttons use */
   font-family: var(--font-head);
   font-weight: 700;
   font-size: 1.5rem;
@@ -1145,13 +1145,11 @@ a:hover {
   width: 16px;
   height: 16px;
   background: inherit;
-  border-right: 2px solid #fff;
-  border-bottom: 2px solid #fff;
   transform: rotate(45deg);
 }
 
 .eden-chat__launcher:hover {
-  background: var(--c-primary-dark);
+  background: #ffc51a;               /* matches .btn--accent:hover */
 }
 
 /* The hidden attribute must actually hide. The browser's built-in
