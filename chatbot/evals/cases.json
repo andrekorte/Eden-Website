@@ -262,7 +262,8 @@
       "why": "A chat panel is not an essay. Long replies do not get read.",
       "turns": ["Tell me everything about studying in Australia."],
       "expect": {
-        "max_chars": 900
+        "max_chars": 900,
+        "none": ["**", "##"]
       }
     }
   ]
