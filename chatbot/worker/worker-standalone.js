@@ -35,15 +35,26 @@ function buildSystem() {
   ];
 }
 
+// Who is allowed to use this worker.
+//
+// Fails CLOSED: an unset or empty ALLOWED_ORIGINS refuses everything rather
+// than accepting everything. The earlier version accepted any origin and wrote
+// a warning nobody reads, which meant a misconfigured deployment looked
+// identical to a protected one from the dashboard - the control was specified
+// but not in force, and only an external probe could tell the difference.
+//
+// Be clear about what this control does and does not do. It stops another
+// WEBSITE from pointing its chat widget at this worker, because browsers send
+// Origin and enforce the response. It does not stop a script, which can send
+// any Origin it likes. The backstop for that is the spend cap on the API key.
 function corsHeaders(request, env) {
   const origin = request.headers.get("Origin");
-  if (!origin) return {};                       // curl and the eval runner
   const list = (env.ALLOWED_ORIGINS || "").split(",").map((o) => o.trim()).filter(Boolean);
   if (list.length === 0) {
-    console.warn("ALLOWED_ORIGINS is not set - accepting " + origin);
-    return { "Access-Control-Allow-Origin": origin, Vary: "Origin" };
+    console.error("ALLOWED_ORIGINS is not set - refusing all requests");
+    return null;
   }
-  if (!list.includes(origin)) return null;
+  if (!origin || !list.includes(origin)) return null;
   return { "Access-Control-Allow-Origin": origin, Vary: "Origin" };
 }
 
@@ -98,10 +109,24 @@ export default {
       return json({ error: "POST /chat" }, 404, cors);
     }
 
+    // Per-IP rate limiting, if the binding exists.
+    //
+    // This one cannot fail closed the way the origin check does: refusing all
+    // traffic when the limiter is missing is a self-inflicted outage, which is
+    // a worse outcome than the risk it defends against. So it fails open - but
+    // LOUDLY, and the log line names the control that is absent rather than
+    // saying nothing. A control that is missing silently is the one that gets
+    // discovered during the incident.
+    //
+    // If you see this in the logs, add the Rate limiting binding named
+    // RATE_LIMITER in the dashboard. Until then the spend cap on the API key is
+    // the only thing bounding abuse.
     if (env.RATE_LIMITER) {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       const { success } = await env.RATE_LIMITER.limit({ key: ip });
       if (!success) return json({ error: "Too many messages. Please wait a moment." }, 429, cors);
+    } else {
+      console.error("RATE_LIMITER binding is missing - requests are NOT rate limited");
     }
 
     let body;

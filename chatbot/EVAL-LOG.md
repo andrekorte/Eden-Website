@@ -286,3 +286,90 @@ Previously a single English failure aborted the job and the Thai results were
 never produced, so a run told us less than it could have. **A test run should
 yield all of its diagnostic information, not stop at the first failure** — the
 gate still fails, but you learn everything in one cycle instead of two.
+
+---
+
+## Run 6 — 14 Aug 2026, first run against the deployed worker
+
+**Scope:** the same 25 English and 11 Thai cases, but sent over HTTP to
+`eden-chat.andrekorte1979.workers.dev/chat` instead of to the API. Different
+question: *is the thing we shipped behaving?* rather than *do the rules hold?*
+
+**Result:** 25/25 English, 11/11 Thai. No rule breached in the deployed path.
+
+The passes are the least interesting part of this run. Three things went wrong
+before a single case ran, and all three were invisible from the dashboard.
+
+### D1 · Both controls were configured and neither was running
+
+`ANTHROPIC_API_KEY` and `ALLOWED_ORIGINS` were both present in the Cloudflare
+UI — the secret showing "Value encrypted", the allowlist showing the two Eden
+domains. Nothing on the screen was amber, let alone red.
+
+A probe from `Origin: https://evil.example.com` was **accepted**.
+
+Variables bind at deploy time, and the running version predated them. So the
+screen said configured and the system said open. One redeploy later the same
+probe returned 403.
+
+*A configuration screen is a claim. Only a request from outside is evidence.*
+This is the same failure as run 3, where a security test passed because the
+attack never arrived — the state of the system and the state of the display had
+quietly diverged, and only an external observation could separate them.
+
+### D2 · The origin allowlist failed open
+
+Worse than a stale deploy: the code was **written** to accept every origin when
+`ALLOWED_ORIGINS` was unset, and log a warning. So a worker deployed without the
+variable — the exact state a first-time deployment is in — served the whole
+internet, and the only signal was a line in a log nobody was reading.
+
+That is a control with an unsafe default. Changed to fail closed: no allowlist,
+no answers. A misconfiguration now breaks the widget loudly on Eden's own site,
+which someone notices in minutes, instead of silently opening the endpoint,
+which nobody notices at all.
+
+Requests with no `Origin` header at all are now refused too. The eval runner
+sends one, which is correct — a test that skips the control is not testing the
+deployed system.
+
+The limit of the control is unchanged and still recorded: CORS binds browsers,
+not scripts. It stops another *website* embedding this worker. It does not stop
+`curl` with a forged Origin. The spend cap is what bounds that, and it is the
+only control here that cannot be argued around.
+
+### D3 · Rate limiting was not running at all, and said nothing
+
+The suite made 28 requests back to back against a worker configured for 20 per
+minute per IP. Not one was throttled.
+
+Cause: rate limiting needs a `RATE_LIMITER` *binding*, which the dashboard
+paste-deploy path does not create — the worker's Bindings count was 0. The code
+skipped the check silently when the binding was absent.
+
+This one **cannot** be made to fail closed. Refusing all traffic because a
+binding is missing is a self-inflicted outage, which is a worse outcome than the
+abuse it prevents. So it still fails open, but now logs at error level naming
+the missing control.
+
+That distinction is worth keeping: **some controls have a safe default and some
+do not.** For the ones that do not, the requirement is that the absence is
+visible and that something else compensates — here, the console spend cap.
+
+### D4 · The platform's own bot protection blocked the test
+
+The first attempt returned Cloudflare error 1010 on all 25 cases: the default
+`Python-urllib` user agent is on a bot signature list, and the request never
+reached the worker. Fixed by naming the runner in the User-Agent.
+
+Not a defect, but a reminder that "the endpoint refused me" had three distinct
+causes in one afternoon — platform bot rules, our origin allowlist, and a
+missing API key — which look nothing alike once you know, and identical when
+you don't.
+
+### What this run is not
+
+Thirty-six green cases against a live endpoint is one sample of a
+non-deterministic system, taken from one IP, in one minute, with no concurrency.
+It says the deployed path works. It does not say the guardrails hold under load,
+under sustained adversarial pressure, or next Tuesday.

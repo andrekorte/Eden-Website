@@ -29,6 +29,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 
@@ -96,15 +97,42 @@ def ask_api(system, messages, timeout=90):
     return "".join(b.get("text", "") for b in data.get("content", [])).strip()
 
 
-def ask_endpoint(endpoint, messages, timeout=90):
+def ask_endpoint(endpoint, messages, origin, timeout=90, retries=2):
+    """Ask the deployed worker.
+
+    The Origin header is not optional. The worker refuses any origin outside
+    ALLOWED_ORIGINS, so a test that omits it gets a 403 and learns nothing about
+    the rules - it only re-proves the allowlist. The test has to arrive dressed
+    as the website.
+
+    Rate limiting has to be handled too: the worker allows 20 requests per
+    minute per IP, and this suite makes more than that back to back. A 429 here
+    is the control working, not a defect, so we wait it out rather than report
+    it as a failure. Worth knowing that a real load test would need to come from
+    somewhere that is allowed to exceed it.
+    """
     req = urllib.request.Request(
         endpoint,
         data=json.dumps({"messages": messages}).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "Origin": origin,
+            # Cloudflare's bot protection blocks the default Python-urllib
+            # signature with a 1010 before the request reaches the worker at
+            # all. That is a platform control sitting in front of ours, and
+            # worth knowing about: it means "the endpoint refused me" has two
+            # possible causes and they look nothing alike in the logs.
+            "User-Agent": "eden-guardrail-evals/1.0 (+https://eden-studentservice.com)",
+        },
     )
     try:
         resp = urllib.request.urlopen(req, timeout=timeout)
     except urllib.error.HTTPError as err:
+        if err.code == 429 and retries > 0:
+            wait = int(err.headers.get("Retry-After") or 20)
+            print("        %srate limited, waiting %ds%s" % (DIM, wait, OFF))
+            time.sleep(wait)
+            return ask_endpoint(endpoint, messages, origin, timeout, retries - 1)
         raise RuntimeError("HTTP %s: %s" % (err.code, err.read().decode()[:200])) from None
     out = []
     for raw in resp:
@@ -162,6 +190,9 @@ def grade(reply, expect):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--endpoint", help="test a deployed worker instead of the prompt")
+    ap.add_argument("--origin", default="https://eden-studentservice.com",
+                    help="Origin header sent in --endpoint mode; the worker's "
+                         "allowlist rejects anything else")
     ap.add_argument("--only", help="substring filter on case id")
     ap.add_argument("--cases", default="cases.json",
                     help="case file: cases.json (English) or cases-th.json (Thai)")
@@ -176,7 +207,8 @@ def main():
         sys.exit("no cases matched")
 
     system = None if args.endpoint else load_system()
-    mode = "endpoint %s" % args.endpoint if args.endpoint else "prompt via API (%s)" % MODEL
+    mode = ("endpoint %s as %s" % (args.endpoint, args.origin) if args.endpoint
+            else "prompt via API (%s)" % MODEL)
     print("%sRunning %d cases against %s%s\n" % (BOLD, len(cases), mode, OFF))
 
     failures = []
@@ -188,8 +220,8 @@ def main():
             # second question is asked in the context the user would have.
             for turn in case["turns"]:
                 messages.append({"role": "user", "content": turn})
-                reply = (ask_endpoint(args.endpoint, messages) if args.endpoint
-                         else ask_api(system, messages))
+                reply = (ask_endpoint(args.endpoint, messages, args.origin)
+                         if args.endpoint else ask_api(system, messages))
                 messages.append({"role": "assistant", "content": reply})
         except RuntimeError as err:
             print("%s ERROR %s %s- %s%s" % (RED, OFF, case["id"], DIM, err))

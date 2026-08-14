@@ -65,23 +65,27 @@ function allowedOrigins(env: Env): string[] {
 /**
  * CORS headers for this request, or null if the origin is not allowed.
  *
- * A request with no Origin header (curl, the eval runner) is allowed through:
- * origin checks only bind browsers, so treating their absence as hostile buys
- * nothing and breaks the tests. The honest limit of this control is in
- * RISKS.md — a forged Origin still gets through, and the rate limit plus the
- * console spend cap are what actually bound the cost.
+ * Fails CLOSED. An unset or empty ALLOWED_ORIGINS refuses everything rather
+ * than accepting everything, and a request with no Origin header is refused
+ * too. The earlier version did the opposite and wrote a warning, which meant a
+ * misconfigured worker was indistinguishable from a protected one on the
+ * dashboard — the control was specified but not in force. That was found by
+ * probing the deployed worker from an origin it should have rejected, and it
+ * is the reason this now defaults to no.
+ *
+ * The honest limit of the control is unchanged and recorded in RISKS.md: it
+ * stops another *website* embedding this worker, because browsers send Origin
+ * and enforce the response. It does not stop a script, which can send any
+ * Origin it likes. The console spend cap is what bounds that.
  */
 function corsHeaders(request: Request, env: Env): Record<string, string> | null {
   const origin = request.headers.get("Origin");
-  if (!origin) return {};
   const list = allowedOrigins(env);
-  // An unconfigured worker is open, so misconfiguration fails loudly in the
-  // logs rather than silently serving the whole internet.
   if (list.length === 0) {
-    console.warn("ALLOWED_ORIGINS is not set — accepting request from " + origin);
-    return { "Access-Control-Allow-Origin": origin, Vary: "Origin" };
+    console.error("ALLOWED_ORIGINS is not set — refusing all requests");
+    return null;
   }
-  if (!list.includes(origin)) return null;
+  if (!origin || !list.includes(origin)) return null;
   return { "Access-Control-Allow-Origin": origin, Vary: "Origin" };
 }
 
@@ -149,12 +153,21 @@ export default {
 
     // Per-IP rate limit. Documented weakness: an office behind one NAT shares a
     // budget, and a botnet does not have the problem at all.
+    //
+    // Unlike the origin check this cannot fail closed — refusing all traffic
+    // because a binding is missing is a self-inflicted outage, worse than the
+    // risk it defends. So it fails open, but says so at error level. Some
+    // controls have a safe default and some do not; for the ones that do not,
+    // the absence has to be visible and something else has to compensate. Here
+    // that is the spend cap.
     if (env.RATE_LIMITER) {
       const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
       const { success } = await env.RATE_LIMITER.limit({ key: ip });
       if (!success) {
         return json({ error: "Too many messages. Please wait a moment." }, 429, cors);
       }
+    } else {
+      console.error("RATE_LIMITER binding is missing — requests are NOT rate limited");
     }
 
     let body: unknown;
