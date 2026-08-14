@@ -252,12 +252,36 @@
     root.appendChild(el.launcher);
     document.body.appendChild(root);
 
+    // Touch devices get no auto-focus: focusing an input summons the
+    // keyboard, and on iOS that reflows the page before the visitor has even
+    // read the greeting. Desktop keeps the convenience.
+    var TOUCH = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    var MOBILE = window.matchMedia("(max-width: 480px)");
+
+    // On phones the panel is full-screen, and its height must track the
+    // VISUAL viewport: when the iOS keyboard opens, the layout viewport does
+    // not shrink but the visible area does, and a 100vh panel gets its header
+    // pushed off the top. visualViewport is the only honest measurement.
+    function fitPanel() {
+      if (panel.hidden || !MOBILE.matches || !window.visualViewport) {
+        panel.style.height = "";
+        return;
+      }
+      panel.style.height = window.visualViewport.height + "px";
+      window.scrollTo(0, 0);
+    }
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", fitPanel);
+    }
+
     function toggle(open) {
       panel.hidden = !open;
       el.launcher.setAttribute("aria-expanded", open ? "true" : "false");
+      document.body.classList.toggle("eden-chat-open", open && MOBILE.matches);
+      fitPanel();
       if (open) {
         if (!el.log.childNodes.length) addBubble("bot", TEXT.greeting);
-        el.input.focus();
+        if (!TOUCH) el.input.focus();
       }
     }
 

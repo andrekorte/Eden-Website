@@ -1309,11 +1309,38 @@ a:hover {
   text-align: center;
 }
 
+/* On phones the chat is a full-screen view, not a floating card. Two iOS
+   traps drove this: (1) a bottom-anchored fixed panel gets shoved off the top
+   when the keyboard opens, because Safari scrolls the focused input into view
+   against the layout viewport; (2) with the keyboard up there is no room for
+   a floating card anyway. chat.js additionally sizes the panel to
+   visualViewport.height while open, which is the only reliable way to keep
+   the header on screen above an iOS keyboard. */
 @media (max-width: 480px) {
   .eden-chat__panel {
     position: fixed;
-    inset: auto 0.5rem 4.5rem 0.5rem;
+    inset: 0;
     width: auto;
-    height: 70vh;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    border: 0;
   }
+
+  /* 16px minimum: below that, focusing the field makes iOS zoom the page. */
+  .eden-chat__input {
+    font-size: 1rem;
+  }
+}
+
+/* While the full-screen chat is open, the page behind it must not scroll,
+   and the launcher must get out of the way - it floats above the panel in
+   paint order and was sitting exactly on top of the send button. Found by
+   the behaviour test, not by a phone, which is the right way round. */
+body.eden-chat-open {
+  overflow: hidden;
+}
+
+body.eden-chat-open .eden-chat__launcher {
+  display: none;
 }
