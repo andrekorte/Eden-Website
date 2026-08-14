@@ -70,6 +70,17 @@ oversight with better paperwork.
 - **Origin checks bind browsers, not scripts.** A forged `Origin` header still
   reaches the worker. The rate limit and the Anthropic console spend cap are the
   real controls.
+- **Rate limiting is configured but not observed to enforce.** The
+  `RATE_LIMITER` binding exists (20 requests / 60 s / IP, namespace 1001) and
+  the code calls it, but a 90-request burst from one IP on 14 Aug 2026 was not
+  throttled, and the dashboard's log view showed zero events for the same
+  window, so the limiter could not be debugged from the platform's own
+  telemetry either. Accepted after a timeboxed attempt rather than trusted:
+  the risk it defends (cost from abuse) is bounded by the console spend cap,
+  which is the control we have actually verified we can rely on. Revisit via
+  `wrangler` CLI deploy, or if the spend dashboard ever shows traffic the
+  business did not send. The worker logs an error if the binding disappears
+  entirely, so silent regression to *no* limiter is at least visible.
 - **Substring grading has a ceiling.** The evals prove that forbidden sentences
   do not appear. They cannot prove an answer is good. A human reads the outputs.
 - **The knowledge base inherits the website's accuracy.** Generated content

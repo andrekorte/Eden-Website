@@ -373,3 +373,41 @@ Thirty-six green cases against a live endpoint is one sample of a
 non-deterministic system, taken from one IP, in one minute, with no concurrency.
 It says the deployed path works. It does not say the guardrails hold under load,
 under sustained adversarial pressure, or next Tuesday.
+
+### Postscript to run 6 — the rate limiter, and stopping
+
+After D3 the `RATE_LIMITER` binding was created in the dashboard and verified
+present (20 req / 60 s / IP, namespace 1001), the fail-closed worker build was
+deployed (confirmed live: a request with no Origin header now gets 403, which
+the old code allowed), and the burst test was repeated.
+
+**90 requests from one IP in under a minute. Zero were throttled.**
+
+The requests were deliberately malformed (`not-json`), so each one exercised
+origin check → rate limit → body parse and stopped there: testing a rate
+limiter should not cost API calls. All 90 returned 400, meaning all 90 passed
+the limiter.
+
+The next diagnostic was the worker's own error-level log line ("RATE_LIMITER
+binding is missing"), added earlier precisely to make this a yes/no question.
+It produced nothing — because the dashboard's Events view showed **zero events
+for the entire hour**, across ~150 real invocations. The observability layer
+was not observing.
+
+At that point the investigation was stopped deliberately. The register now
+carries this as an accepted risk with the spend cap named as the compensating
+control, instead of a rate limit we believe in because a config screen says 20.
+
+Two lessons worth the price:
+
+1. **Intent is not enforcement.** In one afternoon, on one small worker: a
+   secret that was saved but not deployed, an allowlist that failed open, a
+   rate limit that does not fire, and a log view that shows nothing. Four
+   layers of dashboard all describing a system other than the one running.
+   The only instrument that never lied was an external request and its
+   status code.
+2. **A timebox is a governance control.** The alternative was hours of
+   platform archaeology for a control that only slows an abuser down, on a
+   system whose real cost bound is the spend cap. Writing down "attempted,
+   not verified, compensated, revisit condition named" is a better artefact
+   than either pretending it works or sinking the evening into it.
