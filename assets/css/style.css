@@ -1300,15 +1300,6 @@ a:hover {
   cursor: default;
 }
 
-.eden-chat__note {
-  margin: 0;
-  padding: 0 0.9rem 0.7rem;
-  background: #fff;
-  font-size: 0.72rem;
-  color: var(--c-muted);
-  text-align: center;
-}
-
 /* On phones the chat is a full-screen view, not a floating card. Two iOS
    traps drove this: (1) a bottom-anchored fixed panel gets shoved off the top
    when the keyboard opens, because Safari scrolls the focused input into view

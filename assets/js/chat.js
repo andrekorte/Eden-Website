@@ -30,7 +30,7 @@
   var TEXT = {
     launcher: "แชท",                       // "Chat" - one word, instantly parsed
     title: "ผู้ช่วยตอบคำถาม",               // "Enquiry assistant"
-    subtitle: "ตอบอัตโนมัติ · ทีมงานจริงอยู่ที่ LINE",  // "Automated · the real team is on LINE"
+    subtitle: "ตอบอัตโนมัติ · ติดต่อทีมงานผ่าน LINE",  // "Automatic reply · to reach the team, use LINE"
     greeting:
       "สวัสดีค่ะ ถามเรื่องเรียนต่อออสเตรเลียได้เลย " +
       "หากเป็นเรื่องวีซ่าเฉพาะบุคคล ทีมงานจะดูแลต่อทาง LINE นะคะ",
@@ -42,8 +42,6 @@
     thinking: "กำลังพิมพ์...",               // "Typing…"
     error: "ขออภัย ระบบขัดข้องชั่วคราว ทัก LINE @edenstudentservice ได้เลยค่ะ",
       // "Sorry, temporarily unavailable — message LINE @edenstudentservice."
-    disclaimer: "ผู้ช่วยอัตโนมัติ ไม่ใช่คำแนะนำด้านวีซ่า",
-      // "Automated assistant. Not visa advice." — rule 12, always visible.
   };
 
   /** The ONLY things that may become links in model output. */
@@ -242,12 +240,9 @@
     form.appendChild(el.input);
     form.appendChild(el.send);
 
-    var note = make("p", "eden-chat__note", TEXT.disclaimer);
-
     panel.appendChild(head);
     panel.appendChild(el.log);
     panel.appendChild(form);
-    panel.appendChild(note);
     root.appendChild(panel);
     root.appendChild(el.launcher);
     document.body.appendChild(root);
