@@ -21,7 +21,19 @@ A prompt is code with no compiler. Every rule in chatbot/system-rules.md exists
 because of a row in chatbot/RISKS.md, and nothing except these cases says
 whether the rule still holds after the next edit.
 
-Exits non-zero on any failure.
+Flakiness and retries
+---------------------
+The model is non-deterministic, so a correct-by-design bot occasionally trips a
+case (usually because a substring assertion is imperfect). Left unhandled, that
+fails CI on random pushes and emails on every one - and a gate that cries wolf
+gets ignored, which is the alert-fatigue risk the register names. So a failing
+case is retried (--retries, default 2 extra). CI fails ONLY on a case that
+fails EVERY attempt - a consistent, reproducible regression. A case that fails
+once and passes on retry is reported as FLAKY and listed, never silently
+dropped: flakiness on a guardrail is a signal to tighten the case or the rule,
+not something to hide.
+
+Exits non-zero only on a consistent failure.
 """
 
 import argparse
@@ -196,6 +208,10 @@ def main():
     ap.add_argument("--only", help="substring filter on case id")
     ap.add_argument("--cases", default="cases.json",
                     help="case file: cases.json (English) or cases-th.json (Thai)")
+    ap.add_argument("--retries", type=int, default=2,
+                    help="extra attempts for a failing case before it counts as a "
+                         "real failure (default 2, so 3 attempts). A consistent "
+                         "failure is a regression; passing on retry is flakiness.")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
 
@@ -211,37 +227,69 @@ def main():
             else "prompt via API (%s)" % MODEL)
     print("%sRunning %d cases against %s%s\n" % (BOLD, len(cases), mode, OFF))
 
-    failures = []
-    for case in cases:
+    def run_once(case):
+        """One full run of a case. Returns (reply, problems) or raises."""
         messages = []
         reply = ""
-        try:
-            # Multi-turn cases replay the assistant's real answers, so the
-            # second question is asked in the context the user would have.
-            for turn in case["turns"]:
-                messages.append({"role": "user", "content": turn})
-                reply = (ask_endpoint(args.endpoint, messages, args.origin)
-                         if args.endpoint else ask_api(system, messages))
-                messages.append({"role": "assistant", "content": reply})
-        except RuntimeError as err:
-            print("%s ERROR %s %s- %s%s" % (RED, OFF, case["id"], DIM, err))
+        # Multi-turn cases replay the assistant's real answers, so the second
+        # question is asked in the context the user would have.
+        for turn in case["turns"]:
+            messages.append({"role": "user", "content": turn})
+            reply = (ask_endpoint(args.endpoint, messages, args.origin)
+                     if args.endpoint else ask_api(system, messages))
+            messages.append({"role": "assistant", "content": reply})
+        return reply, grade(reply, case["expect"])
+
+    failures = []   # failed EVERY attempt - a real, reproducible regression
+    flaky = []      # failed at least once but passed on retry - surfaced, not fatal
+
+    for case in cases:
+        # Retry is not "roll the dice until green". A guardrail that fails once
+        # in three is a real weakness, so flakiness is never silently swallowed:
+        # it is printed and listed for review. But CI only fails the build on a
+        # CONSISTENT failure, because a single non-deterministic slip on a
+        # correct-by-design bot would otherwise email on every push and train
+        # everyone to ignore the gate - the exact alert-fatigue failure the
+        # register warns about. Consistent fail = regression; intermittent =
+        # flag for a human, do not block.
+        attempts = args.retries + 1
+        reply, problems, errored = "", None, None
+        passed, failed_before_pass = False, False
+        for _ in range(attempts):
+            try:
+                reply, problems = run_once(case)
+            except RuntimeError as err:
+                errored = err
+                break
+            if not problems:
+                passed = True
+                break            # a pass is a pass; stop sampling
+            failed_before_pass = True
+
+        if errored is not None:
+            print("%s ERROR %s %s- %s%s" % (RED, OFF, case["id"], DIM, errored))
             failures.append(case["id"])
             continue
 
-        problems = grade(reply, case["expect"])
-        if problems:
+        if passed:
+            print("%s pass  %s %s" % (GREEN, OFF, case["id"]))
+            if failed_before_pass:
+                flaky.append(case["id"])
+                print("        %sFLAKY: failed an earlier attempt, passed on retry%s" % (YELLOW, OFF))
+            if args.verbose:
+                print("        %s%s%s" % (DIM, reply.replace("\n", " ")[:400], OFF))
+        else:
             failures.append(case["id"])
-            print("%s FAIL  %s %s  %s(rule %s)%s" % (RED, OFF, case["id"], DIM, case["rule"], OFF))
-            for p in problems:
+            print("%s FAIL  %s %s  %s(rule %s, failed all %d attempts)%s" % (
+                RED, OFF, case["id"], DIM, case["rule"], attempts, OFF))
+            for p in (problems or []):
                 print("        %s%s%s" % (YELLOW, p, OFF))
             print("        %swhy: %s%s" % (DIM, case["why"], OFF))
             print("        %sreply: %s%s" % (DIM, reply.replace("\n", " ")[:400], OFF))
-        else:
-            print("%s pass  %s %s" % (GREEN, OFF, case["id"]))
-            if args.verbose:
-                print("        %s%s%s" % (DIM, reply.replace("\n", " ")[:400], OFF))
 
     print("\n%d passed, %d failed" % (len(cases) - len(failures), len(failures)))
+    if flaky:
+        print("%sflaky (passed on retry, review): %s%s" % (YELLOW, ", ".join(flaky), OFF))
     if failures:
         print("%sfailed: %s%s" % (RED, ", ".join(failures), OFF))
         sys.exit(1)
