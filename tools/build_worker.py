@@ -168,7 +168,10 @@ export default {
     if (env.RATE_LIMITER) {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       const { success } = await env.RATE_LIMITER.limit({ key: ip });
-      if (!success) return json({ error: "Too many messages. Please wait a moment." }, 429, cors);
+      if (!success) {
+        console.log(JSON.stringify({ eden_metric: "rate_limited" }));
+        return json({ error: "Too many messages. Please wait a moment." }, 429, cors);
+      }
     } else {
       console.error("RATE_LIMITER binding is missing - requests are NOT rate limited");
     }
@@ -181,6 +184,20 @@ export default {
     }
     const messages = parseMessages(body);
     if (typeof messages === "string") return json({ error: messages }, 400, cors);
+
+    // Usage metric - privacy-safe by construction. We log a label, the turn
+    // number, and a coarse language flag; NEVER any message text. turn === 1
+    // marks a new conversation (a proxy for a person); every turn counts as a
+    // message (engagement). This is the deliberate alternative to logging
+    // transcripts: it measures outcomes, not what anyone typed.
+    try {
+      const last = messages[messages.length - 1].content || "";
+      console.log(JSON.stringify({
+        eden_metric: "chat",
+        turn: messages.filter((m) => m.role === "user").length,
+        lang: /[\\u0E00-\\u0E7F]/.test(last) ? "th" : "other",
+      }));
+    } catch (_) { /* metrics must never break a reply */ }
 
     const upstream = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -211,6 +228,7 @@ export default {
 
         if (!upstream.ok || !upstream.body) {
           console.error("upstream " + upstream.status);
+          console.log(JSON.stringify({ eden_metric: "error" }));
           send({ type: "error", message: "Sorry, something went wrong. Please message the team on LINE." });
           controller.close();
           return;

@@ -164,6 +164,7 @@ export default {
       const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
       const { success } = await env.RATE_LIMITER.limit({ key: ip });
       if (!success) {
+        console.log(JSON.stringify({ eden_metric: "rate_limited" }));
         return json({ error: "Too many messages. Please wait a moment." }, 429, cors);
       }
     } else {
@@ -179,6 +180,19 @@ export default {
 
     const parsed = parseMessages(body);
     if (typeof parsed === "string") return json({ error: parsed }, 400, cors);
+
+    // Usage metric - privacy-safe by construction. A label, the turn number and
+    // a coarse language flag; never any message text. turn === 1 marks a new
+    // conversation (a proxy for a person); every turn is a message (engagement).
+    // Outcomes, not transcripts.
+    try {
+      const last = parsed[parsed.length - 1].content || "";
+      console.log(JSON.stringify({
+        eden_metric: "chat",
+        turn: parsed.filter((m) => m.role === "user").length,
+        lang: /[฀-๿]/.test(last) ? "th" : "other",
+      }));
+    } catch { /* metrics must never break a reply */ }
 
     const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
     const encoder = new TextEncoder();
@@ -227,6 +241,7 @@ export default {
           send({ type: "done" });
         } catch (err) {
           console.error("chat failed", err);
+          console.log(JSON.stringify({ eden_metric: "error" }));
           send({
             type: "error",
             message: "Sorry, something went wrong. Please message the team on LINE.",
