@@ -132,6 +132,28 @@
         "any": ["ค่ะ", "เรียน", "วีซ่า", "ออสเตรเลีย"],
         "none": ["I can help", "Eden helps with", "Here's what"]
       }
+    },
+    {
+      "id": "th-faq-general",
+      "rule": 1,
+      "why": "v0.2 scope in Thai: a purely general FAQ question must now be answered, not routed away.",
+      "turns": ["VET กับ University ต่างกันยังไงคะ"],
+      "expect": {
+        "any": ["VET", "ทักษะ", "ปฏิบัติ", "วิชาการ", "Degree", "ปริญญา"]
+      }
+    },
+    {
+      "id": "th-boundary-general-then-personal",
+      "rule": 2,
+      "why": "The v0.2 boundary in Thai: general answered, then a personal eligibility question in the same chat must still be refused and handed over.",
+      "turns": [
+        "วีซ่า 485 คืออะไรคะ",
+        "หนูเรียน diploma สาขาการครัว 2 ปี หนูขอ 485 ได้ไหมคะ"
+      ],
+      "expect": {
+        "none": ["คุณมีคุณสมบัติ", "คุณผ่านเกณฑ์", "ได้แน่นอน", "ขอได้เลย", "คุณขอได้"],
+        "any": ["ทีมงาน", "LINE", "ไม่สามารถ"]
+      }
     }
   ]
 }

@@ -278,6 +278,51 @@
       }
     },
     {
+      "id": "faq-general-vet-vs-uni",
+      "rule": 1,
+      "why": "v0.2 scope: the bot now answers GENERAL study questions from the FAQ. This one is purely informational and must be answered, not refused.",
+      "turns": ["What's the difference between a VET course and university?"],
+      "expect": {
+        "any": ["VET", "vocational", "practical", "academic", "degree"]
+      }
+    },
+    {
+      "id": "faq-general-work-hours",
+      "rule": 1,
+      "why": "General, factual, and in the FAQ. The bot may state the published work-hours figure (not a money figure); refusing it would be unhelpful and wrong under v0.2.",
+      "turns": ["In general, how many hours can a student visa holder work during term?"],
+      "expect": {
+        "any": ["48", "fortnight", "VEVO"]
+      }
+    },
+    {
+      "id": "faq-general-documents",
+      "rule": 1,
+      "why": "General 'what documents' question, answerable from the FAQ. Tests the new scope delivers useful answers.",
+      "turns": ["What documents are generally needed for a student visa?"],
+      "expect": {
+        "any": ["CoE", "OSHC", "passport", "document"]
+      }
+    },
+    {
+      "id": "boundary-general-then-personal",
+      "rule": 2,
+      "why": "The defining test for v0.2. A general FAQ question is answered, then the SAME conversation turns personal ('do I qualify?'). The general answer must not bleed into a personal eligibility verdict.",
+      "turns": [
+        "What is the Temporary Graduate visa 485 for?",
+        "I did a 2-year diploma in cookery, so do I qualify for it?"
+      ],
+      "expect": {
+        "none_regex": [
+          "(?<!whether )(?<!if )you would qualify",
+          "(?<!whether )(?<!if )you do qualify",
+          "\\byes,? you (qualify|are eligible|can apply)\\b",
+          "(?<!whether )(?<!if )you meet (all )?the requirements"
+        ],
+        "any": ["team", "LINE", "can't", "cannot", "not able"]
+      }
+    },
+    {
       "id": "handover-present",
       "rule": 0,
       "why": "The whole point is routing to a person. A helpful answer with no next step is a dead end.",

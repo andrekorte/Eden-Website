@@ -38,6 +38,7 @@ OUT_MD = os.path.join(ROOT, "chatbot", "knowledge-base.md")
 OUT_TS = os.path.join(ROOT, "chatbot", "worker", "src", "knowledge-base.ts")
 RULES_MD = os.path.join(ROOT, "chatbot", "system-rules.md")
 RULES_TS = os.path.join(ROOT, "chatbot", "worker", "src", "system-rules.ts")
+FAQ_SRC = os.path.join(ROOT, "chatbot", "faq-source.md")
 
 # Facts the assistant may state that the website does not say in so many words.
 # Everything here is a business decision recorded in the owner questionnaire.
@@ -100,22 +101,36 @@ def cards(source, section_id):
     return out
 
 
+def read_faq():
+    """The team-curated FAQ. This is the primary knowledge now; it replaces the
+    thin set of questions that used to be scraped from the homepage. Unlike the
+    rest of the KB it is NOT generated from the website - it is expert content
+    the team wrote, so it is version-controlled as chatbot/faq-source.md and
+    approved like the rules. Strip only the top-level H1 so it nests cleanly."""
+    with open(FAQ_SRC, encoding="utf-8") as fh:
+        text = fh.read().strip()
+    text = re.sub(r"^#\s+.*\n+", "", text, count=1)   # drop the leading H1 title
+    return text.strip()
+
+
 def build():
     index = read("index.html")
     services = read("services.html")
     contact = read("contact.html")
+    faq = require(read_faq(), "FAQ content in chatbot/faq-source.md")
     lines = []
 
     def head(title):
         lines.append("\n## %s\n" % title)
 
-    lines.append("# Eden Student and Migration Service - what the website says")
+    lines.append("# Eden Student and Migration Service - knowledge base")
     lines.append(
-        "\nGenerated from the website by tools/build_kb.py. Do not edit by hand; "
-        "edit the site and re-run.\n"
+        "\nThe FAQ section below is the team-curated source of answers "
+        "(chatbot/faq-source.md); the rest is generated from the website by "
+        "tools/build_kb.py. Do not edit the generated sections by hand.\n"
     )
 
-    head("Services")
+    head("What Eden helps with")
     for name, body in require(cards(services, "visa-services"), "visa service cards"):
         lines.append("- **%s** - %s" % (name, body))
     for name, body in require(cards(services, "study-services"), "study service cards"):
@@ -123,23 +138,7 @@ def build():
     for name, body in require(cards(services, "extra-services"), "support service cards"):
         lines.append("- **%s** - %s" % (name, body))
 
-    head("Visa types the website describes")
-    lines.append(
-        "General descriptions only. The assistant must never apply these to a "
-        "person's situation - see rule 2.\n"
-    )
-    rows = require(
-        re.findall(r"<tr>\s*<th scope=\"row\">(.*?)</th>\s*<td>(.*?)</td>", services, re.S),
-        "visa table rows",
-    )
-    for visa, who in rows:
-        lines.append("- **%s** - %s" % (strip_tags(visa), strip_tags(who)))
-
-    head("Fields of study the website highlights")
-    for name, body in require(cards(services, "pr-courses"), "course cards"):
-        lines.append("- **%s** - %s" % (name, body))
-
-    head("Cities")
+    head("Cities Eden places students in")
     for name, body in require(cards(index, "dest-heading"), "city cards"):
         lines.append("- **%s** - %s" % (name, body))
 
@@ -157,20 +156,14 @@ def build():
         for dt, dd in re.findall(r"<dt>(.*?)</dt>\s*<dd>(.*?)</dd>", art, re.S):
             lines.append("  - %s: %s" % (strip_tags(dt), strip_tags(dd)))
 
-    head("Questions the website already answers")
-    faqs = require(
-        re.findall(r"<details>\s*<summary>(.*?)</summary>\s*<p>(.*?)</p>", index, re.S),
-        "FAQ entries",
+    head("Frequently asked questions (team-curated)")
+    lines.append(
+        "These are GENERAL answers the team approved for sharing. They are never "
+        "to be applied to the person's own case - see rule 2. Anything about "
+        "someone's own eligibility, documents, scores, current visa or refusal "
+        "goes to the team on LINE.\n"
     )
-    for q, a in faqs:
-        lines.append("- **%s** %s" % (strip_tags(q), strip_tags(a)))
-
-    head("Partner institutions")
-    logos = require(
-        re.findall(r'<img src="assets/img/partner-[^"]+" alt="([^"]+)"', index),
-        "partner logos",
-    )
-    lines.append(", ".join(logos) + ".")
+    lines.append(faq)
 
     head("Operating facts not stated on the website")
     for fact in OPERATIONAL_FACTS:

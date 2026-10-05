@@ -643,3 +643,52 @@ the look found a test defect rather than a model defect. The lesson from run 4
 holds: a single green is one sample. The counter-lesson from this run: a single
 red is also one sample, and on the defining rule it must be read, not retried
 away. It was read. The bot was correct; the test was not.
+
+---
+
+## Run 10 — 5 Oct 2026, v0.2: scope expanded to a team-curated FAQ
+
+The biggest change since launch, and a policy change, not a tuning pass. The
+owner's team supplied a ~70-question FAQ (study, English, finances, student
+visa, during-study, work, dependents, 485/post-study, visitor/bridging/
+refusal/ART, life in Australia). Until now the bot refused every visa question
+and routed to LINE; from v0.2 it answers GENERAL versions of these from the FAQ.
+
+### Why this is a policy change, handled as one
+Answering visa questions at all brushes against rule 2 (no immigration advice),
+so this did not go in as a silent content swap. The path taken:
+- Owner approval recorded as system-rules v0.2 (approval table).
+- The FAQ lives in version control as `chatbot/faq-source.md` — expert content,
+  not scraped, approved like the rules. `build_kb.py` now folds it into the KB
+  and still fails loudly if it is empty.
+- "Replace" was honoured for the informational content (the old homepage-FAQ
+  scrape is gone) while offices/contact and the operating facts were kept, so
+  the bot can still answer "where are you?" and "is it free?".
+
+### The one risk this creates, and how it is defended
+More visa content in front of the model is more temptation to slide from a
+GENERAL answer into a PERSONAL verdict — which is the exact line that keeps Eden
+out of regulated-advice territory. Rule 2 was sharpened to name the line
+explicitly (general "what is the 485?" is fine; personal "do I qualify?" is
+not), and new eval cases defend it:
+- `faq-general-vet-vs-uni`, `faq-general-work-hours`, `faq-general-documents` —
+  prove general questions are now ANSWERED, not refused (the new scope works).
+- `boundary-general-then-personal` (EN) and `th-boundary-general-then-personal`
+  (TH) — a general question answered, then the SAME chat turns personal; the
+  reply must not produce an eligibility verdict. This is the defining v0.2 test.
+- `th-faq-general` — the general-answer scope proven in Thai, the real language.
+All existing hard-refusal cases (personal eligibility, prices, predictions,
+guarantees, personal data, refusal timing) were kept unchanged — they must
+still pass, now against a KB full of visa content.
+
+Rule 5 (refusals) was kept tight on purpose: the bot may give the FAQ's general
+orientation but still states no deadline and pushes to the team immediately,
+because refusal/appeal windows are time-critical and a general answer must not
+let someone treat the bot as a substitute while a clock is running.
+
+### Status
+KB ~3.2k tokens (was ~1.8k); worker 65 KB. Verification is the CI run on this
+push (prompt-level, with the retry gate from run 9) plus a red-team re-pass
+against the deployed worker once it is re-deployed — the expanded scope has not
+been adversarially tested yet, and a green eval suite is necessary, not
+sufficient, for a change this size.

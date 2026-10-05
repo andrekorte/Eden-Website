@@ -1,50 +1,4 @@
-# Eden Student and Migration Service - knowledge base
-
-The FAQ section below is the team-curated source of answers (chatbot/faq-source.md); the rest is generated from the website by tools/build_kb.py. Do not edit the generated sections by hand.
-
-
-## What Eden helps with
-
-- **วีซ่านักเรียนออสเตรเลีย (Subclass 500)** - ดูแลครบจบทุกขั้นตอน ตั้งแต่เตรียมเอกสาร สมัครเรียน กรอกใบสมัครวีซ่า จนถึงวันที่วีซ่าออก ประเมินโปรไฟล์และวางแผนก่อนยื่น; จัดการเอกสารและใบสมัครให้ทั้งหมด; ยื่นได้ทั้งจากประเทศไทยและในออสเตรเลีย; แนะนำประกันสุขภาพนักเรียน (OSHC)
-- **วีซ่าติดตามนักเรียน (Dependent Visa)** - พาคู่สมรสและบุตรไปใช้ชีวิตด้วยกันที่ออสเตรเลีย เราช่วยวางแผนเอกสารความสัมพันธ์และการเงินให้รัดกุม
-- **Temporary Graduate Visa (Subclass 485)** - เรียนจบแล้วอยากอยู่ทำงานต่อ? เราช่วยตรวจสอบคุณสมบัติและยื่นวีซ่า 485 ให้ถูกต้องตามเงื่อนไขล่าสุด
-- **วีซ่าท่องเที่ยว / เยี่ยมเยียน (Visitor Visa)** - สำหรับครอบครัวที่อยากไปเยี่ยม หรือผู้ที่อยากไปสำรวจออสเตรเลียก่อนตัดสินใจเรียนต่อ
-- **อุทธรณ์วีซ่า (ART)** - กรณีวีซ่าถูกปฏิเสธหรือถูกยกเลิก เราให้คำปรึกษาเรื่องการยื่นอุทธรณ์ต่อ Administrative Review Tribunal
-- **คอร์สภาษาอังกฤษ** - General English, IELTS Preparation และ EAP (English for Academic Purposes) ในซิดนีย์ บริสเบน และเมืองอื่น ๆ ทั่วออสเตรเลีย
-- **มัธยมศึกษา** - วางแผนส่งบุตรหลานเรียนมัธยมที่ออสเตรเลีย พร้อมคำแนะนำเรื่องโรงเรียน ผู้ปกครอง และที่พัก
-- **สายอาชีพ (VET)** - Certificate III/IV และ Diploma หลากหลายสาขา เช่น ธุรกิจ การครัว Aged Care และการท่องเที่ยว — หลายสาขาต่อยอดสู่ PR ได้
-- **ปริญญาตรี–โท** - สมัครเรียนมหาวิทยาลัยในออสเตรเลีย พร้อมช่วยขอ Letter of Offer และจัดการเอกสารทั้งหมด
-- **ที่พัก** - แนะนำที่พักทุกรูปแบบ ทั้งโฮมสเตย์ หอพักนักเรียน และแชร์เฮาส์
-- **ดูแลหลังถึงออสเตรเลีย** - ทีมงานที่ซิดนีย์และบริสเบนพร้อมช่วยเหลือ ตั้งแต่เปิดบัญชีธนาคารจนถึงเรื่องเรียนและวีซ่า
-
-## Cities Eden places students in
-
-- **ซิดนีย์** - เมืองใหญ่ที่สุดของออสเตรเลีย งานเยอะ สถาบันให้เลือกมากที่สุด — และออฟฟิศ Eden ก็อยู่ที่นี่
-- **บริสเบน** - อากาศดี ค่าครองชีพเป็นมิตร บรรยากาศผ่อนคลาย — มีทีมงาน Eden ประจำอยู่เช่นกัน
-- **เมลเบิร์น** - เมืองแห่งศิลปะ กาแฟ และมหาวิทยาลัยระดับโลก ติดอันดับเมืองน่าอยู่ของโลกทุกปี
-- **โกลด์โคสต์** - เรียนไปเที่ยวทะเลไป ไลฟ์สไตล์ชายหาดที่นักเรียนไทยหลงรัก
-- **เพิร์ท** - เมืองฝั่งตะวันตกที่เงียบสงบ ไทม์โซนใกล้ไทยที่สุด ค่าครองชีพไม่แรง
-- **แอดิเลด** - เมืองนักเรียนในเขต Regional ที่อาจได้แต้มพิเศษด้านวีซ่าในบางโครงการ
-
-## Offices and contact details
-
-- **🇦🇺 ซิดนีย์ (Sydney)**
-  - Address: Shop T03, Capital Square, Level 1 730–742 George Street Haymarket NSW 2000, Australia
-  - โทร: +61 431 876 999 · +61 403 689 868
-  - อีเมล: sydney@eden-studentservice.com
-  - เวลาทำการ: จันทร์–เสาร์ 10:00–18:00
-- **🇦🇺 บริสเบน (Brisbane)**
-  - Address: Suite 3J, Level 3 123 Charlotte Street Brisbane QLD 4000, Australia
-  - อีเมล: info@eden-studentservice.com
-  - เวลาทำการ: จันทร์–ศุกร์ 10:00–18:00
-- **🇹🇭 ประเทศไทย (อยุธยา)**
-  - Address: 93/1 ถ.พหลโยธิน ต.เชียงรากน้อย อ.บางปะอิน จ.พระนครศรีอยุธยา 13180
-  - โทร: 095 252 5879
-  - อีเมล: bangkok@eden-studentservice.com ayutthaya@eden-studentservice.com
-
-## Frequently asked questions (team-curated)
-
-These are GENERAL answers the team approved for sharing. They are never to be applied to the person's own case - see rule 2. Anything about someone's own eligibility, documents, scores, current visa or refusal goes to the team on LINE.
+# Eden study-abroad FAQ (team-curated)
 
 Approved by the Eden team as general, public information the assistant may share.
 These are GENERAL answers only. The moment a question is about the person's own
@@ -288,12 +242,3 @@ A: ไม่ฟรีทุกกรณีค่ะ ควรตรวจคว�
 ## Handoff
 
 หากคำถามเกี่ยวข้องกับประวัติส่วนตัว เช่น อายุ วุฒิ ผลภาษา Visa ปัจจุบัน Visa Refusal หรือแผนการเรียน และต้องการให้ทีมงานช่วยดูเคสเพิ่มเติม ส่งรายละเอียดให้พี่ ๆ Eden ช่วยเช็กได้เลยค่ะ LINE: @edenstudentservice
-
-## Operating facts not stated on the website
-
-- The first consultation is free.
-- The team are contacted on LINE at @edenstudentservice. That is the normal next step for anyone who wants to go further.
-- Eden works with Australia only. It does not place students in New Zealand, Canada, the United Kingdom or anywhere else.
-- Eden specialises in Thai students and provides Thai-language service, but it welcomes students of any nationality who want to study in Australia. It does not work only with Thai nationals. Enquiries in English or from other countries are welcome, and the team can discuss what support they can offer.
-- Eden is an education agent. It does not give immigration or legal advice; visa questions are handled by the team.
-- After someone messages on LINE the team will get back to them. No response time is promised.
